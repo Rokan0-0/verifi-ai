@@ -1,111 +1,34 @@
-# Verifi-AI: The Agentic Knowledge Market 🤖💸
+# Verifi-AI: The Trustless Agent Economy 🤖💸
 
-> **Hack2Build: Payments x402 Submission**
-> *Building the financial rail for the Autonomous Economy on Avalanche.*
+**Verifi-AI** is a decentralized marketplace where AI Agents buy and sell high-value financial intelligence instantly using **x402 (Payment Required)** and **ERC-8004 (Identity)**.
 
-![License](https://img.shields.io/badge/license-MIT-green)
-![Network](https://img.shields.io/badge/network-Avalanche%20Fuji-red)
-![Status](https://img.shields.io/badge/status-Prototype-blue)
+## 🏆 Hackathon Tracks Targeted
+* **Consumer Payments:** Bringing Web3 payments to a simple chat interface.
+* **AI-Powered Financial Agents:** Automating the sale of financial data.
+* **Tooling & Infrastructure:** Leveraging standard HTTP status codes (402) for blockchain triggers.
 
-## 💡 The Vision
+## 🚀 The Problem
+AI Agents currently cannot transact. If an Agent needs proprietary data (e.g., real-time TURF metrics), it hits a paywall it cannot cross. It has no credit card and no bank account.
 
-**Verifi-AI** is a decentralized marketplace where AI Agents buy and sell high-value validation and insights from each other instantly, without human intervention.
+## 💡 The Solution
+Verifi-AI implements the **HTTP 402 Protocol** to allow Agents to negotiate and pay for data atomically on the Avalanche blockchain.
+1.  **Request:** Agent A asks for data.
+2.  **Gate:** Agent B responds with `402 Payment Required`.
+3.  **Pay:** Agent A signs a micro-transaction (AVAX/USDC).
+4.  **Verify:** Agent B validates the on-chain Tx and releases the data.
+5.  **Trust:** All Agents are verified via **ERC-8004** to prevent spam.
 
-**The Problem:** AI Agents today are economically isolated. They cannot purchase a specific piece of data (e.g., "Real-time inflation rate") because the web is gated by monthly credit card subscriptions. There is no infrastructure for an Agent to pay $0.05 for a single API call.
+## 🛠️ Tech Stack
+* **Frontend:** Next.js 14, Tailwind CSS, React-Markdown.
+* **Backend:** Node.js, Express (Custom x402 Middleware).
+* **Blockchain:** Avalanche Fuji Testnet.
+* **Identity:** Solidity (ERC-8004 Implementation).
+* **Data Oracle:** Mocked integration with Kite AI / TURF Network.
 
-**The Solution:** A "Pay-Per-Insight" protocol using the **x402** standard. Agents request data, receive a `402 Payment Required` signal, and instantly settle the cost in USDC on Avalanche to unlock the resource.
+## 📸 Demo
+[Insert Screenshot Here]
 
----
-
-## 🏗 Architecture & Flow
-
-The system relies on a seamless loop between Identity, Payment, and Action.
-
-```mermaid
-graph LR
-    A[Client Agent] -- 1. Request Insight --> B((x402 Gateway))
-    B -- 2. 402 Payment Required --> A
-    A -- 3. Sign & Send USDC --> C[Avalanche Chain]
-    C -- 4. Payment Confirmed --> B
-    B -- 5. Release Data JSON --> A
-    A -- 6. Update Reputation --> D[ERC-8004 Registry]
-```
-
-### Key Components
-
-- **The "Money" Layer (Backend)**: An Express Node.js server implementing x402 middleware. It intercepts API calls and forces a blockchain payment before releasing data.
-
-- **The "Trust" Layer (Contracts)**: ERC-8004 Smart Contracts on Avalanche that verify Agent Identity. If an Agent sells bad data, its on-chain reputation score drops.
-
-- **The "Intelligence" Layer (Agents)**: Seller Agents powered by Kite AI and TURF that fetch real-world financial data to sell on the market.
-
-## 🛠 Tech Stack
-
-- **Blockchain**: Avalanche Fuji Testnet
-- **Payment Standard**: x402 (HTTP 402 Payment Required)
-- **Frontend**: Next.js 14, Tailwind CSS, Thirdweb SDK (v5)
-- **Backend**: Node.js, Express, x402-express middleware
-- **Smart Contracts**: Solidity, Hardhat, Viem
-- **Agent Logic**: Kite AI integration
-
-## 📂 Project Structure (Monorepo)
-
-```
-verifi-ai/
-├── backend/       # Node.js x402 Gateway (The "Seller")
-│   ├── server.js  # Main entry point for payment logic
-│   └── src/       # Agent logic and data fetching
-│
-├── frontend/      # Next.js Agent UI (The "Buyer")
-│   ├── app/       # Chat interface & Wallet connection
-│   └── components/# Youmio-style 3D visualizations
-│
-└── contracts/     # Hardhat/Viem Environment
-    └── contracts/ # ERC-8004 Identity & Reputation contracts
-```
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js (v18+)
-- Metamask (configured for Avalanche Fuji)
-- USDC (Testnet)
-
-### 1. Setup Backend (The Gateway)
-
-```bash
-cd backend
-npm install
-# Create .env file with SELLER_WALLET_ADDRESS
-npm run dev
-# Server starts on localhost:4000
-```
-
-### 2. Setup Frontend (The Client)
-
-```bash
-cd frontend
-npm install
-npm run dev
-# App starts on localhost:3000
-```
-
-### 3. Setup Contracts (The Trust)
-
-```bash
-cd contracts
-npm install
-npx hardhat compile
-```
-
-## 🗺 Roadmap
-
-- [x] **Phase 1: Prototype (Dec 1)** - Functional x402 Gateway and Basic UI
-- [ ] **Phase 2: MVP (Dec 8)** - Full ERC-8004 integration and live Kite AI data feed
-- [ ] **Phase 3: Launch (Dec 12)** - Mainnet deployment and Agent Swarm demo
-
-## 👥 Team
-
-**Solo Founder**: [Rokan]  
-**Role**: Full-stack Engineering, Smart Contracts, & Agent Architecture
+## 📦 Installation
+1. `npm install` (Root)
+2. `cd backend && node server.js`
+3. `cd frontend && npm run dev`
