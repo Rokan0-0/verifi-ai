@@ -161,7 +161,7 @@ export default function Home() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && askAgent()}
-            placeholder="Ask for Financial Insight (Cost: 0.1 AVAX)" 
+            placeholder="Enter a Token (e.g., AVAX) for Alpha OR a Wallet (0x...) for a Roast" 
             className="flex-1 p-4 rounded-xl bg-gray-800 border border-gray-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-inner"
           />
           <button 

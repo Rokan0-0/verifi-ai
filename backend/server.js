@@ -1,5 +1,4 @@
-require('dotenv').config(); // Make sure this is at the VERY TOP
-
+require('dotenv').config(); 
 const express = require('express');
 const cors = require('cors');
 const { ethers } = require('ethers');
@@ -7,35 +6,31 @@ const { ethers } = require('ethers');
 const app = express();
 const port = 3001;
 
-// CONFIGURATION
-const SELLER_WALLET = process.env.SELLER_WALLET_ADDRESS;
+// === CONFIGURATION ===
+// Uses .env but falls back to hardcoded ONLY for local dev safety if .env fails
+const SELLER_WALLET = process.env.SELLER_WALLET || "0xYourWalletHere"; 
 const PRICE_AVAX = "0.1";
 const FUJI_RPC = process.env.FUJI_RPC || "https://api.avax-test.network/ext/bc/C/rpc";
 
-// SAFETY CHECK: Crash if .env is missing
-if (!SELLER_WALLET) {
-    console.error("❌ ERROR: SELLER_WALLET_ADDRESS is missing from .env file!");
-    process.exit(1);
-}
-
-console.log(`Verifi-AI Gateway Configured`);
-console.log(`Receiver Wallet: ${SELLER_WALLET}`);
+// Setup Ethers Provider
+const provider = new ethers.JsonRpcProvider(FUJI_RPC);
 
 app.use(cors());
 app.use(express.json());
 
-// Provider to check blockchain
-const provider = new ethers.JsonRpcProvider(FUJI_RPC);
+// === SAFETY CHECK ===
+if (!process.env.SELLER_WALLET) {
+    console.warn("⚠️ WARNING: SELLER_WALLET not found in .env. Using fallback/dummy address.");
+}
 
+// === THE ENDPOINT ===
 app.post('/api/ask-agent', async (req, res) => {
     const { query, paymentTxHash } = req.body;
-    
-    // DEBUG LOGGING (Add this to see what is happening in the terminal)
-    console.log("Received Query:", query);
-    console.log("Received Hash:", paymentTxHash);
+    console.log(`\n[INCOMING] Query: "${query}" | Tx: ${paymentTxHash || "None"}`);
 
-    // 1. GATEWAY CHECK (The 402 Wall)
+    // 1. GATEWAY: HTTP 402 PAYMENT REQUIRED
     if (!paymentTxHash) {
+        console.log(">> ⛔ Blocking request. Sending 402.");
         return res.status(402).json({
             error: "Payment Required",
             details: {
@@ -43,78 +38,101 @@ app.post('/api/ask-agent', async (req, res) => {
                 amount: PRICE_AVAX,
                 currency: "AVAX",
                 chain: "Avalanche Fuji",
-                description: "Verifi-AI Agent Insight Fee"
+                description: "Mercenary Agent Insight Fee"
             }
         });
     }
 
-    // 2. VERIFICATION LOGIC
-    // === THE BACKDOOR ===
-    if (paymentTxHash === "DEV_BYPASS_KEY_123" || paymentTxHash === "FREE_DEV_PASS_2025") {
-        console.log(">> 🟢 DEV MODE DETECTED. Access Granted.");
-        // We do NOT check the blockchain. We just continue down.
-    } 
-    // === THE REAL DOOR ===
-    else {
+    // 2. VERIFICATION (Real + Dev Bypass)
+    if (paymentTxHash === "DEV_BYPASS_KEY_123") {
+        console.log(">> 🛠️ DEV MODE DETECTED. Access Granted.");
+    } else {
         try {
-            console.log(`>> Verifying On-Chain Tx: ${paymentTxHash}...`);
+            console.log(`>> 🔍 Verifying On-Chain Tx: ${paymentTxHash}...`);
             const tx = await provider.getTransaction(paymentTxHash);
             
             if (!tx) throw new Error("Transaction not found");
             if (tx.to.toLowerCase() !== SELLER_WALLET.toLowerCase()) throw new Error("Wrong Recipient");
             
-            console.log(">> Payment Valid.");
+            console.log(">> ✅ Payment Valid.");
         } catch (err) {
             console.error("Payment Verification Failed:", err.message);
-            // This is where your 403 comes from
             return res.status(403).json({ error: "Invalid Payment", reason: err.message });
         }
     }
 
-    // 3. AI RESPONSE (The "Smart" Analyst)
+    // 3. THE MERCENARY AI ENGINE (Simulation)
+    const isWallet = query.trim().startsWith("0x");
+    const upperQuery = query.toUpperCase();
+    let analysis = "";
+
+    // --- MODE A: ROAST MY WALLET (Entertainment) ---
+    if (isWallet) {
+        // Randomize net worth for variety
+        const netWorth = (Math.random() * (800 - 5) + 5).toFixed(2); 
+        const isRekt = netWorth < 200;
+        
+        const roast = isRekt 
+            ? "absolute dust. Did you click a drainer link or are you just bad at this?" 
+            : "exit liquidity for VC unlocks. Stop buying tops.";
+
+        const score = isRekt ? "4/100 (NGMI)" : "42/100 (Mid-Curve)";
+
+        analysis = `
+### 💀 Wallet Audit: ${query.substring(0, 6)}...${query.substring(38)}
+**Net Worth:** $${netWorth}
+**Degen Score:** ${score}
+
+**The Roast:**
+I scanned your on-chain history. You are holding ${roast}
+
+**Mercenary Advice:**
+Bridge your assets to Avalanche and buy something with actual utility before you get rugged again.
+        `;
+    } 
     
-    const token = query.toUpperCase().includes("BTC") ? "BTC" : "AVAX";
-    const isAvax = token === "AVAX";
+    // --- MODE B: ALPHA HUNTER (Utility) ---
+    else {
+        const token = upperQuery.includes("BTC") ? "BTC" : (upperQuery || "AVAX");
+        // 60% chance of Bullish result
+        const isBullish = Math.random() > 0.4; 
+        
+        const signal = isBullish ? "🟢 APE IN" : "🔴 DUMP IT";
+        const sentiment = isBullish ? "Whales are accumulating heavily." : "Insiders are dumping.";
+        
+        // Randomize price targets
+        const upside = (Math.random() * (500 - 20) + 20).toFixed(0);
+        const downside = (Math.random() * (90 - 10) + 10).toFixed(0);
+        const target = isBullish ? `+${upside}%` : `-${downside}%`;
 
-    // --- DYNAMIC RANDOMIZER START ---
-    // Randomize price slightly so it looks "live" every time you ask
-    const basePrice = isAvax ? 42.50 : 98400.00;
-    const randomFluctuation = (Math.random() * 2 - 1).toFixed(2); // +/- $1.00
-    const currentPrice = (basePrice + parseFloat(randomFluctuation)).toFixed(2);
-    
-    // Randomize volume percentage
-    const volumeChange = (Math.random() * (25 - 10) + 10).toFixed(1); // Between 10% and 25%
-    // --- DYNAMIC RANDOMIZER END ---
+        analysis = `
+### ⚔️ Mercenary Signal: ${token}
+**Verdict:** ${signal}
+**Potential Upside:** ${target}
 
-    const sentiment = isAvax ? "🟢 STRONG BUY" : "🟡 NEUTRAL";
-    
-    const analysis = `
-### 📊 Market Intelligence: ${token}
-**Signal:** ${sentiment}
+**Intel (x402 Exclusive):**
+${sentiment} I tracked a wallet (0x8f...2a) that moved $200k in the last 15 minutes. 
 
-**On-Chain Rationale (TURF Oracle):**
-• **Whale Activity:** High inflow detected (>$5M) in last 4h.
-• **Volume Delta:** +${volumeChange}% vs 24h average.
-• **Resistance:** $${currentPrice} is holding as key support.
+**Strategy:**
+Don't be a jeet. ${isBullish ? "Hold until the targets hit." : "Cut your losses now."}
+        `;
+    }
 
-**Agent Recommendation:**
-Accumulate. The x402 payment volume on Subnet-C suggests rising utility demand.
-    `;
-
+    // SEND RESPONSE
     res.json({
         success: true,
         data: {
             answer: analysis.trim(),
             metadata: {
-                source: "TURF Network Aggregator",
-                confidence: "94.2%",
-                compute_time: "0.4s",
-                model: "Kite-AI-Financial-v2"
+                source: "Mercenary Private Node",
+                agent_id: "MERC-001",
+                gas_used: "Low"
             }
         }
     });
 });
 
 app.listen(port, () => {
-    console.log(`\nVerifi-AI Gateway running on port ${port}`);
+    console.log(`\n🤖 Mercenary Gateway running on port ${port}`);
+    console.log(`💰 Receiver: ${SELLER_WALLET}`);
 });
